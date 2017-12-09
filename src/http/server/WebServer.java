@@ -127,7 +127,7 @@ public class WebServer {
 				FileReader fr = new FileReader("L:\\Mes Documents\\RESEAUX\\HTTPServer\\src\\" + req);
 				BufferedReader br = new BufferedReader(fr);
 				while ((br.readLine()) != null) {
-					outMedia.print("<h4>Contenu du fichier</h4>");
+					//outMedia.print("<h4>Contenu du fichier</h4>");
 					outMedia.print("<h1>" + br.read() + "</h1>");
 				}
 				br.close();
@@ -209,8 +209,12 @@ public class WebServer {
 			out.println(req);
 			FileReader fr = new FileReader("L:\\Mes Documents\\RESEAUX\\HTTPServer\\src\\" + req);
 			BufferedReader br = new BufferedReader(fr);
+			String str ="";
 			while ((br.readLine()) != null) {
 				// out.print("<h4>test</h4>");
+				str = br.readLine();
+				if(str.substring(1,6).equals("/HEAD")) break;
+				//si on considère que la balise </HEAD" est mise sur une nouvelle ligne
 				out.print("<h1>" + br.read() + "</h1>");
 
 			}
