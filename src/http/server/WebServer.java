@@ -252,18 +252,9 @@ public class WebServer {
 
 	public void doDelete(String req, PrintWriter out) {
 		try {
-			out.println(req);
-			FileReader fr = new FileReader("L:\\Mes Documents\\RESEAUX\\HTTPServer\\src\\" + req);
-			BufferedReader br = new BufferedReader(fr);
-			while ((br.readLine()) != null) {
-				// out.print("<h4>test</h4>");
-				out.print("<h1>" + br.read() + "</h1>");
-
-			}
-			/*
-			 * bw.write(out + "\n"); bw.newLine();
-			 */
-			br.close();
+			Path path =  FileSystems.getDefault().getPath("L:\\Mes Documents\\RESEAUX\\HTTPServer\\src\\" + req);
+			Files.deleteIfExists(path);
+			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
