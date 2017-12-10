@@ -94,6 +94,8 @@ public class WebServer {
 						// type "GET /path" = on enlève le /
 						//if (!request.equals("favicon.ico"))
 						doGet(request, outMedia, root);
+						
+						
 						str = "";
 
 					} else if (str != null && str.substring(0,4).equals("POST")) {
@@ -102,9 +104,8 @@ public class WebServer {
 						doPost(in, outMedia,root);
 						str = "";
 					} else if (str != null && str.substring(0,4).equals("HEAD")) {
-						String request = str.substring(6, str.length() - "HTTP\1.1".length());
-						// type "GET /path" = on enlève le /
-						//doHead(request, outMedia, root);
+						String request = str.substring(6, str.length() - "HTTP\1.1".length()-1);
+						doHead(request, outMedia, root);
 						str = "";
 					} else if (str != null && str.substring(0,3).equals("PUT")) {
 						String request = str.substring(5, str.length() - "HTTP\1.1".length());
@@ -253,7 +254,7 @@ public class WebServer {
 		outMedia.close();
 	}
 
-	public void doHead(String req, PrintWriter out, String root) {
+	public void doHead(String req, PrintStream out, String root) {
 		try {
 			out.println(req);
 			FileReader fr = new FileReader(root + req);
@@ -283,7 +284,7 @@ public class WebServer {
 		out.close();
 	}
 
-	public void doPut(String req, PrintWriter out, String root) {
+	public void doPut(String req, PrintStream out, String root) {
 		try {
 			out.println(req);
 			FileReader fr = new FileReader(root + req);
@@ -325,8 +326,14 @@ public class WebServer {
 		}
 		return ext;
 	}
+	
+	
 }
 
 // contenu binaire = fileinputstream
+
+
+//headers construction
+// https://stackoverflow.com/questions/20889076/constructing-http-headers-for-java-http-server
 
 // http://www.javapractices.com/topic/TopicAction.do?Id=245
