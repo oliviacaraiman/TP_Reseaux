@@ -2,10 +2,15 @@
 
 package http.server;
 
+import java.awt.Image;
+import java.awt.image.RenderedImage;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Scanner;
+
+import javax.imageio.ImageIO;
+
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -73,7 +78,7 @@ public class WebServer {
 					str = in.readLine();
 					// str = "GET /test.txt";
 					if (str != null && str.substring(0, 3).equals("GET")) {
-						String request = str.substring(5, str.length() - " HTTP\1.1".length());
+						String request = str.substring(5, str.length() - " HTTP\1.1".length()-1);
 						// type "GET /path" = on enlève le /
 						doGet(request, outMedia, root);
 						str = "";
@@ -123,19 +128,32 @@ public class WebServer {
 
 	public void doGet(String req, PrintStream outMedia, String root) {
 		try {
+			outMedia.flush();
+			
 			outMedia.println("you requested : " +req);
 			String extension = getExtension(req);
 			outMedia.println("the extension is : " +extension);
 			
-			//System.out.println(extension);
+			String textPath = root + req;
+			Path path = Paths.get(textPath);
+			byte[] fileContents = Files.readAllBytes(path);
+			
+			
+			
 			if (extension.equals("txt")) {
-				FileReader fr = new FileReader("C:\\Users\\Lucie\\git\\TP_Reseaux\\src\\" + req);
-				BufferedReader br = new BufferedReader(fr);
-				while ((br.readLine()) != null) {
-					//outMedia.print("<h4>Contenu du fichier</h4>");
-					outMedia.print("<h1>" + br.read() + "</h1>");
-				}
-				br.close();
+//				FileReader fr = new FileReader("C:\\Users\\Lucie\\git\\TP_Reseaux\\src\\" + req);
+//				BufferedReader br = new BufferedReader(fr);
+//				while ((br.readLine()) != null) {
+//					//outMedia.print("<h4>Contenu du fichier</h4>");
+//					outMedia.print("<h1>" + br.read() + "</h1>");
+//				}
+//				br.close();
+				
+				outMedia.print("<h4>Contenu du fichier</h4>");
+				outMedia.write(fileContents);
+				outMedia.close();
+				
+				
 			} else if (extension.equals("png") || extension.equals("jpeg") || extension.equals("jpg")) {
 				FileInputStream fis = new FileInputStream(root + req);
 				// a finir
@@ -145,9 +163,17 @@ public class WebServer {
 //				byte[] bytes = binary.readSmallBinaryFile(FILE_NAME);
 //				Files.write(path, aBytes); // creates, overwrites
 				
-				Path path = FileSystems.getDefault().getPath(root + req);
-				byte[] fileContents =  Files.readAllBytes(path);
-				outMedia.write(fileContents);
+//				Path path = FileSystems.getDefault().getPath(root + req);
+//				byte[] fileContents =  Files.readAllBytes(path);
+//				outMedia.write(fileContents);
+//				
+				File srcimg = new File(root +req);
+				RenderedImage img = ImageIO.read(srcimg);
+				
+				//BufferedImage bufferedImage = ImageIO.read(new ByteArrayInputStream(fileContents));
+				ImageIO.write(img, extension, outMedia);
+				
+				
 
 			}
 
@@ -273,9 +299,9 @@ public class WebServer {
 	}
 
 	String getExtension(String request) {
-		if(request != null){
+		if(request != null && request.contains(".")){
 			String[] result = request.split("\\.");
-			
+						
 			return result[result.length -1];
 		}
 		else
