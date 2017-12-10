@@ -2,11 +2,18 @@
 
 package http.server;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Scanner;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -47,7 +54,8 @@ public class WebServer {
 				// remote is now the connected socket
 				System.out.println("Connection, sending data.");
 				BufferedReader in = new BufferedReader(new InputStreamReader(remote.getInputStream()));
-				//PrintWriter out = new PrintWriter(remote.getOutputStream());
+				// PrintWriter out = new PrintWriter(remote.getOutputStream());
+				OutputStream out = remote.getOutputStream();
 				PrintStream outMedia = new PrintStream(remote.getOutputStream());
 				// read the data sent. We basically ignore it,
 				// stop reading once a blank line is hit. This
@@ -63,34 +71,40 @@ public class WebServer {
 				outMedia.println("");
 				// Send the HTML page
 				outMedia.println("<H1>Welcome to the Ultra Mini-WebServer</H1>");
+				outMedia.flush();
+
 
 				String str = ".";
 				while (str != null && !str.equals("")) {
 					str = in.readLine();
+
+					System.out.println(str);
 					// str = "GET /test.txt";
 					if (str != null && str.substring(0, 3).equals("GET")) {
-						String request = str.substring(5, str.length() - " HTTP\1.1".length());
+						String request = str.substring(5, str.length() - " HTTP\1.1".length() - 1);
+						System.out.println(request);
 						// type "GET /path" = on enlève le /
-						doGet(request, outMedia);
+						//if (!request.equals("favicon.ico"))
+						doGet(request, outMedia, remote);
 						str = "";
-					} else if (str != null && str.substring(0, 4).equals("POST")) {
-						String request = str.substring(6, str.length() - " HTTP\1.1".length());
-						// type "GET /path" = on enlève le /
 
-					//	doPost(in, outMedia);
+					} else if (str != null && str.substring(0,4).equals("POST")) {
+						String request = str.substring(6, str.length() - "HTTP\1.1".length());
+						// type "GET /path" = on enlève le /
+						doPost(in, outMedia);
 						str = "";
-					} else if (str != null && str.substring(0, 4).equals("HEAD")) {
-						String request = str.substring(6, str.length() - " HTTP\1.1".length());
+					} else if (str != null && str.substring(0,4).equals("HEAD")) {
+						String request = str.substring(6, str.length() - "HTTP\1.1".length());
 						// type "GET /path" = on enlève le /
 						//doHead(request, outMedia);
 						str = "";
-					} else if (str != null && str.substring(0, 3).equals("PUT")) {
-						String request = str.substring(5, str.length() - " HTTP\1.1".length());
+					} else if (str != null && str.substring(0,3).equals("PUT")) {
+						String request = str.substring(5, str.length() - "HTTP\1.1".length());
 						// type "GET /path" = on enlève le /
 						//doPut(request, outMedia);
 						str = "";
-					} else if (str != null && str.substring(0, 6).equals("DELETE")) {
-						String request = str.substring(8, str.length() - " HTTP\1.1".length());
+					} else if (str != null && str.substring(0,6).equals("DELETE")) {
+						String request = str.substring(8, str.length() - "HTTP\1.1".length());
 						// type "GET /path" = on enlève le /
 						//doDelete(request, out);
 						str = "";
@@ -117,33 +131,48 @@ public class WebServer {
 		ws.start();
 	}
 
-	public void doGet(String req, PrintStream outMedia) {
+	public void doGet(String req, PrintStream outMedia, Socket remote) {
 		try {
-			outMedia.println(req);
+			// outMedia.println(req);
+			outMedia.flush();
+
 			String extension = getExtension(req);
-			
-			System.out.println(extension);
-			if (extension.equals("txt")) {
-				FileReader fr = new FileReader("L:\\Mes Documents\\RESEAUX\\HTTPServer\\src\\" + req);
-				BufferedReader br = new BufferedReader(fr);
-				while ((br.readLine()) != null) {
-					outMedia.print("<h4>Contenu du fichier</h4>");
-					outMedia.print("<h1>" + br.read() + "</h1>");
-				}
-				br.close();
-			} else if (extension.equals("png") || extension.equals("jpeg") || extension.equals("jpg")) {
-				FileInputStream fis = new FileInputStream("L:\\Mes Documents\\RESEAUX\\HTTPServer\\src\\" + req);
-				// a finir
+			String textPath = "D:\\java\\TP2_Reseaux\\src\\" + req;
+			Path path = Paths.get(textPath);
+			byte[] fileContents = Files.readAllBytes(path);
 
-//				Path path = Paths.get("L:\\Mes Documents\\RESEAUX\\HTTPServer\\src\\" + req);
-//				SmallBinaryFiles binary = new SmallBinaryFiles();
-//				byte[] bytes = binary.readSmallBinaryFile(FILE_NAME);
-//				Files.write(path, aBytes); // creates, overwrites
-				
-				Path path = FileSystems.getDefault().getPath("L:\\Mes Documents\\RESEAUX\\HTTPServer\\src\\" + req);
-				byte[] fileContents =  Files.readAllBytes(path);
+			// Path path = FileSystems.getDefault().getPath("L:\\Mes
+			// Documents\\RESEAUX\\HTTPServer\\src\\" + req);
+			// byte[] fileContents = Files.readAllBytes(path);
+
+			if (extension.equals("txt") || extension.equals("html")) {
+
+				outMedia.print("<h4>Contenu du fichier</h4>");
 				outMedia.write(fileContents);
+				outMedia.close();
 
+			} else if (extension.equals("png") || extension.equals("jpeg") || extension.equals("jpg")
+					|| extension.equals("ico")) {
+				// PROBLEMe
+
+				PrintStream out = new PrintStream(remote.getOutputStream());
+				out.append("HTTP/1.0 200 OK \r\n");
+				out.append("Content-Type: image/png \r\n");
+				out.append("Server: Bot \r\n");
+				out.append("\r\n");
+				out.print("<h4>Contenu du fichier</h4>");
+
+				// BufferedImage bufferedImage = ImageIO.read(new
+				// ByteArrayInputStream(fileContents));
+				// outMedia.write("Content-Type: image/png");
+				// outMedia.write(fileContents);
+				// ImageIO.write(bufferedImage, extension, outMedia);
+
+				// FileInputStream fis = new FileInputStream("L:\\Mes
+				// Documents\\RESEAUX\\HTTPServer\\src\\" + req);
+				// // a finir
+
+				outMedia.close();
 			}
 
 		} catch (IOException e) {
@@ -161,35 +190,38 @@ public class WebServer {
 		outMedia.close();
 	}
 
-	public void doPost(BufferedReader req, PrintWriter out) {
+	public void doPost(BufferedReader req, PrintStream outMedia) {
 		try {
-			out.println(req);
+			outMedia.println(req);
 			// FileReader fr = new FileReader("L:\\Mes
 			// Documents\\RESEAUX\\HTTPServer\\src\\" + req);
 			// BufferedReader br = new BufferedReader(fr);
 			String strRead = req.readLine();
+			
 			// lecture de head
 			while (strRead != null && !strRead.equals("")) {
 				// out.print("<h4>test</h4>");
-				out.print("<h1>" + strRead + "</h1>");
+				System.out.println("header: " + strRead);
+				//outMedia.print("<h1>" + strRead + "</h1>");
 				strRead = req.readLine();
 
 			}
 			// lecture du body
 			strRead = req.readLine();
-			File file = new File("L:\\Mes Documents\\RESEAUX\\HTTPServer\\src\\received.txt");
+			File file = new File("D:\\java\\TP2_Reseaux\\src\\received.txt");
 			if (!file.exists()) {
 				file.createNewFile();
 			}
-			FileWriter fw = new FileWriter("L:\\Mes Documents\\RESEAUX\\HTTPServer\\src\\received.txt", true);
+			FileWriter fw = new FileWriter("D:\\java\\TP2_Reseaux\\src\\received.txt", true);
 
 			BufferedWriter bw = new BufferedWriter(fw);
 			while (strRead != null && !strRead.equals("")) {
 				// out.print("<h4>test</h4>");
-				out.print("<h1>" + strRead + "</h1>");
-				strRead = req.readLine();
-				bw.write(strRead + "\n");
+				outMedia.print("<h1>" + strRead + "</h1>");
+				
+				bw.write(strRead);
 				bw.newLine();
+				strRead = req.readLine();
 			}
 
 			bw.close();
@@ -201,7 +233,7 @@ public class WebServer {
 			e.printStackTrace();
 		}
 
-		out.close();
+		outMedia.close();
 	}
 
 	public void doHead(String req, PrintWriter out) {
@@ -268,19 +300,15 @@ public class WebServer {
 	}
 
 	String getExtension(String request) {
-		if(request != null){
-			String[] result = new String[2];
-			request.split(".");
-			return result[1];
+		String ext = "none";
+		if (request != null && request.contains(".")) {
+			String[] result = request.split("[.]");
+			ext = result[1];
 		}
-		else
-		{
-			return "none";
-		}
-		
+		return ext;
 	}
 }
 
 // contenu binaire = fileinputstream
 
-//http://www.javapractices.com/topic/TopicAction.do?Id=245
+// http://www.javapractices.com/topic/TopicAction.do?Id=245
