@@ -123,10 +123,11 @@ public class WebServer {
 
 	public void doGet(String req, PrintStream outMedia, String root) {
 		try {
-			outMedia.println(req);
+			outMedia.println("you requested : " +req);
 			String extension = getExtension(req);
+			outMedia.println("the extension is : " +extension);
 			
-			System.out.println(extension);
+			//System.out.println(extension);
 			if (extension.equals("txt")) {
 				FileReader fr = new FileReader("C:\\Users\\Lucie\\git\\TP_Reseaux\\src\\" + req);
 				BufferedReader br = new BufferedReader(fr);
@@ -273,9 +274,9 @@ public class WebServer {
 
 	String getExtension(String request) {
 		if(request != null){
-			String[] result = new String[2];
-			request.split(".");
-			return result[1];
+			String[] result = request.split("\\.");
+			
+			return result[result.length -1];
 		}
 		else
 		{
