@@ -86,7 +86,7 @@ public class WebServer {
 					} else if (str != null && str.substring(0, 4).equals("HEAD")) {
 						String request = str.substring(6, str.length() - " HTTP\1.1".length());
 						// type "GET /path" = on enlève le /
-						//doHead(request, outMedia);
+						//doHead(request, outMedia, root);
 						str = "";
 					} else if (str != null && str.substring(0, 3).equals("PUT")) {
 						String request = str.substring(5, str.length() - " HTTP\1.1".length());
@@ -128,7 +128,7 @@ public class WebServer {
 			
 			System.out.println(extension);
 			if (extension.equals("txt")) {
-				FileReader fr = new FileReader(root + req);
+				FileReader fr = new FileReader("C:\\Users\\Lucie\\git\\TP_Reseaux\\src\\" + req);
 				BufferedReader br = new BufferedReader(fr);
 				while ((br.readLine()) != null) {
 					//outMedia.print("<h4>Contenu du fichier</h4>");
@@ -208,19 +208,19 @@ public class WebServer {
 		out.close();
 	}
 
-	public void doHead(String req, PrintWriter out) {
+	public void doHead(String req, PrintWriter out, String root) {
 		try {
 			out.println(req);
-			FileReader fr = new FileReader("L:\\Mes Documents\\RESEAUX\\HTTPServer\\src\\" + req);
+			FileReader fr = new FileReader(root + req);
 			BufferedReader br = new BufferedReader(fr);
-			String str ="";
-			while ((br.readLine()) != null && !br.readLine().equals("")) {
+			String str =".";
+			while ((str) != null && !str.equals("")) {
 				
 				//les headers sont séparés du reste par un saut de ligne
 				
 				// out.print("<h4>test</h4>");
 				
-				//str = br.readLine();
+				str = br.readLine();
 				//if(str.substring(1,6).equals("/HEAD")) break;
 				//si on considère que la balise </HEAD" est mise sur une nouvelle ligne
 				
