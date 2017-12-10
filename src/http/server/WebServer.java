@@ -63,6 +63,10 @@ public class WebServer {
 				outMedia.println("");
 				// Send the HTML page
 				outMedia.println("<H1>Welcome to the Ultra Mini-WebServer</H1>");
+				
+				//String root = "L:\\Mes Documents\\RESEAUX\\HTTPServer\\src\\";
+				String root = "C:\\Users\\Lucie\\git\\TP_Reseaux\\src\\";
+
 
 				String str = ".";
 				while (str != null && !str.equals("")) {
@@ -71,13 +75,13 @@ public class WebServer {
 					if (str != null && str.substring(0, 3).equals("GET")) {
 						String request = str.substring(5, str.length() - " HTTP\1.1".length());
 						// type "GET /path" = on enlève le /
-						doGet(request, outMedia);
+						doGet(request, outMedia, root);
 						str = "";
 					} else if (str != null && str.substring(0, 4).equals("POST")) {
 						String request = str.substring(6, str.length() - " HTTP\1.1".length());
 						// type "GET /path" = on enlève le /
 
-					//	doPost(in, outMedia);
+					//	doPost(in, outMedia,root);
 						str = "";
 					} else if (str != null && str.substring(0, 4).equals("HEAD")) {
 						String request = str.substring(6, str.length() - " HTTP\1.1".length());
@@ -87,12 +91,12 @@ public class WebServer {
 					} else if (str != null && str.substring(0, 3).equals("PUT")) {
 						String request = str.substring(5, str.length() - " HTTP\1.1".length());
 						// type "GET /path" = on enlève le /
-						//doPut(request, outMedia);
+						//doPut(request, outMedia, root);
 						str = "";
 					} else if (str != null && str.substring(0, 6).equals("DELETE")) {
 						String request = str.substring(8, str.length() - " HTTP\1.1".length());
 						// type "GET /path" = on enlève le /
-						//doDelete(request, out);
+						//doDelete(request, out, root);
 						str = "";
 					}
 
@@ -117,14 +121,14 @@ public class WebServer {
 		ws.start();
 	}
 
-	public void doGet(String req, PrintStream outMedia) {
+	public void doGet(String req, PrintStream outMedia, String root) {
 		try {
 			outMedia.println(req);
 			String extension = getExtension(req);
 			
 			System.out.println(extension);
 			if (extension.equals("txt")) {
-				FileReader fr = new FileReader("L:\\Mes Documents\\RESEAUX\\HTTPServer\\src\\" + req);
+				FileReader fr = new FileReader(root + req);
 				BufferedReader br = new BufferedReader(fr);
 				while ((br.readLine()) != null) {
 					//outMedia.print("<h4>Contenu du fichier</h4>");
@@ -132,7 +136,7 @@ public class WebServer {
 				}
 				br.close();
 			} else if (extension.equals("png") || extension.equals("jpeg") || extension.equals("jpg")) {
-				FileInputStream fis = new FileInputStream("L:\\Mes Documents\\RESEAUX\\HTTPServer\\src\\" + req);
+				FileInputStream fis = new FileInputStream(root + req);
 				// a finir
 
 //				Path path = Paths.get("L:\\Mes Documents\\RESEAUX\\HTTPServer\\src\\" + req);
@@ -140,7 +144,7 @@ public class WebServer {
 //				byte[] bytes = binary.readSmallBinaryFile(FILE_NAME);
 //				Files.write(path, aBytes); // creates, overwrites
 				
-				Path path = FileSystems.getDefault().getPath("L:\\Mes Documents\\RESEAUX\\HTTPServer\\src\\" + req);
+				Path path = FileSystems.getDefault().getPath(root + req);
 				byte[] fileContents =  Files.readAllBytes(path);
 				outMedia.write(fileContents);
 
@@ -161,7 +165,7 @@ public class WebServer {
 		outMedia.close();
 	}
 
-	public void doPost(BufferedReader req, PrintWriter out) {
+	public void doPost(BufferedReader req, PrintWriter out, String root) {
 		try {
 			out.println(req);
 			// FileReader fr = new FileReader("L:\\Mes
@@ -177,11 +181,11 @@ public class WebServer {
 			}
 			// lecture du body
 			strRead = req.readLine();
-			File file = new File("L:\\Mes Documents\\RESEAUX\\HTTPServer\\src\\received.txt");
+			File file = new File(root +"received.txt");
 			if (!file.exists()) {
 				file.createNewFile();
 			}
-			FileWriter fw = new FileWriter("L:\\Mes Documents\\RESEAUX\\HTTPServer\\src\\received.txt", true);
+			FileWriter fw = new FileWriter(root + "received.txt", true);
 
 			BufferedWriter bw = new BufferedWriter(fw);
 			while (strRead != null && !strRead.equals("")) {
@@ -210,11 +214,16 @@ public class WebServer {
 			FileReader fr = new FileReader("L:\\Mes Documents\\RESEAUX\\HTTPServer\\src\\" + req);
 			BufferedReader br = new BufferedReader(fr);
 			String str ="";
-			while ((br.readLine()) != null) {
+			while ((br.readLine()) != null && !br.readLine().equals("")) {
+				
+				//les headers sont séparés du reste par un saut de ligne
+				
 				// out.print("<h4>test</h4>");
-				str = br.readLine();
-				if(str.substring(1,6).equals("/HEAD")) break;
+				
+				//str = br.readLine();
+				//if(str.substring(1,6).equals("/HEAD")) break;
 				//si on considère que la balise </HEAD" est mise sur une nouvelle ligne
+				
 				out.print("<h1>" + br.read() + "</h1>");
 
 			}
@@ -229,10 +238,10 @@ public class WebServer {
 		out.close();
 	}
 
-	public void doPut(String req, PrintWriter out) {
+	public void doPut(String req, PrintWriter out, String root) {
 		try {
 			out.println(req);
-			FileReader fr = new FileReader("L:\\Mes Documents\\RESEAUX\\HTTPServer\\src\\" + req);
+			FileReader fr = new FileReader(root + req);
 			BufferedReader br = new BufferedReader(fr);
 			while ((br.readLine()) != null) {
 				// out.print("<h4>test</h4>");
@@ -250,9 +259,9 @@ public class WebServer {
 		out.close();
 	}
 
-	public void doDelete(String req, PrintWriter out) {
+	public void doDelete(String req, PrintWriter out,String root) {
 		try {
-			Path path =  FileSystems.getDefault().getPath("L:\\Mes Documents\\RESEAUX\\HTTPServer\\src\\" + req);
+			Path path =  FileSystems.getDefault().getPath(root + req);
 			Files.deleteIfExists(path);
 			
 		} catch (IOException e) {
