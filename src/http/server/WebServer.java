@@ -98,12 +98,12 @@ public class WebServer {
 							doGet(request, outMedia, root);
 						str = "";
 					} else if (str != null && str.substring(0, 4).equals("POST")) {
-						String request = str.substring(6, str.length() - "HTTP\1.1".length()- 2);
+						String request = str.substring(6, str.length() - "HTTP\1.1".length() - 2);
 						// type "GET /path" = on enlève le /
 						doPost(in, outMedia, root);
 						str = "";
 					} else if (str != null && str.substring(0, 4).equals("HEAD")) {
-						String request = str.substring(6, str.length() -  "HTTP\1.1".length() - 2);
+						String request = str.substring(6, str.length() - "HTTP\1.1".length() - 2);
 						doHead(request, outMedia, root);
 						str = "";
 					} else if (str != null && str.substring(0, 3).equals("PUT")) {
@@ -146,19 +146,19 @@ public class WebServer {
 			outMedia.flush();
 
 			String extension = getExtension(req);
-			String err ="200 OK";
+			String err = "200 OK";
 			Path path = Paths.get(root + req);
 			byte[] fileContents = Files.readAllBytes(path);
-			
+
 			if (extension.equals("txt") || extension.equals("html")) {
-				
-				Header(err, extension, outMedia,fileContents);
+
+				Header(err, extension, outMedia, fileContents.length);
 				outMedia.write(fileContents);
 				outMedia.close();
 
 			} else if (extension.equals("png") || extension.equals("jpeg") || extension.equals("jpg")) {
-				
-				Header(err, extension, outMedia,fileContents);
+
+				Header(err, extension, outMedia, fileContents.length);
 				outMedia.write(fileContents);
 				outMedia.close();
 
@@ -167,11 +167,10 @@ public class WebServer {
 			e.printStackTrace();
 		}
 
-	
 		/*
 		 * out.println("<HTML>"); //out.println("<HEAD> <TITLE> Hello," + name +
-		 * "</TITLE></HEAD>"); out.println("<BODY>"); //out.println("Hello, " +
-		 * name); out.println("</BODY>"); out.println("</HTML>");
+		 * "</TITLE></HEAD>"); out.println("<BODY>"); //out.println("Hello, " + name);
+		 * out.println("</BODY>"); out.println("</HTML>");
 		 */
 		outMedia.close();
 	}
@@ -225,90 +224,122 @@ public class WebServer {
 	}
 
 	public void doHead(String req, PrintStream outMedia, String root) {
-		try{
-//			out.println(req);
-//			FileReader fr = new FileReader(root + req);
-//			BufferedReader br = new BufferedReader(fr);
-//			String str = ".";
-//			while ((str) != null && !str.equals("")) {
-//
-//				// les headers sont séparés du reste par un saut de ligne
-//
-//				// out.print("<h4>test</h4>");
-//
-//				str = br.readLine();
-//				
-//
-//				out.print("<h1>" + br.read() + "</h1>");
-//
-//			}
+		try {
+			// out.println(req);
+			// FileReader fr = new FileReader(root + req);
+			// BufferedReader br = new BufferedReader(fr);
+			// String str = ".";
+			// while ((str) != null && !str.equals("")) {
+			//
+			// // les headers sont séparés du reste par un saut de ligne
+			//
+			// // out.print("<h4>test</h4>");
+			//
+			// str = br.readLine();
+			//
+			//
+			// out.print("<h1>" + br.read() + "</h1>");
+			//
+			// }
 			/*
 			 * bw.write(out + "\n"); bw.newLine();
 			 */
-//			br.close();
-			
+			// br.close();
+
 			String extension = getExtension(req);
-			String err ="200 OK";
+			String err = "200 OK";
 			Path path = Paths.get(root + req);
 			byte[] fileContents = Files.readAllBytes(path);
-			
-			if (extension.equals("txt") || extension.equals("html")) {
-				
-				Header(err, extension, outMedia,fileContents);
+
+			/*if (extension.equals("txt") || extension.equals("html")) {
+
+				Header(err, extension, outMedia, fileContents);
 				outMedia.close();
 
 			} else if (extension.equals("png") || extension.equals("jpeg") || extension.equals("jpg")) {
-				
-				Header(err, extension, outMedia,fileContents);
+
+				Header(err, extension, outMedia, fileContents);
 				outMedia.close();
 
-			}
+			}*/
+			
+			//write header in a file 
+			//print header du resource.ext_header.txt
+			//print header
+			storeHeader(root + req, err, extension, outMedia, fileContents.length);
+			//build equivalent fileContents pour le nouveau fichier
+			Header(err, "txt", outMedia, )
 			
 			
 			
-//			String strRead = req.readLine();
-//			// lecture de head
-//			while (strRead != null && !strRead.equals("")) {
-//				// out.print("<h4>test</h4>");
-//				System.out.println("header: " + strRead);
-//				// outMedia.print("<h1>" + strRead + "</h1>");
-//				strRead = req.readLine();
-//
-//			}
-//			// lecture du body
-//			strRead = req.readLine();
-//			File file = new File(root + "received.txt");
-//			if (!file.exists()) {
-//				file.createNewFile();
-//			}
-//			FileWriter fw = new FileWriter(root + "received.txt", true);
-//
-//			BufferedWriter bw = new BufferedWriter(fw);
-//			while (strRead != null && !strRead.equals("")) {
-//				// out.print("<h4>test</h4>");
-//				outMedia.print("<h1>" + strRead + "</h1>");
-//
-//				bw.write(strRead);
-//				bw.newLine();
-//				strRead = req.readLine();
-//				bw.write(strRead + "\n");
-//				bw.newLine();
-//			}
-//
-//			bw.close();
-			
+			// String strRead = req.readLine();
+			// // lecture de head
+			// while (strRead != null && !strRead.equals("")) {
+			// // out.print("<h4>test</h4>");
+			// System.out.println("header: " + strRead);
+			// // outMedia.print("<h1>" + strRead + "</h1>");
+			// strRead = req.readLine();
+			//
+			// }
+			// // lecture du body
+			// strRead = req.readLine();
+			// File file = new File(root + "received.txt");
+			// if (!file.exists()) {
+			// file.createNewFile();
+			// }
+			// FileWriter fw = new FileWriter(root + "received.txt", true);
+			//
+			// BufferedWriter bw = new BufferedWriter(fw);
+			// while (strRead != null && !strRead.equals("")) {
+			// // out.print("<h4>test</h4>");
+			// outMedia.print("<h1>" + strRead + "</h1>");
+			//
+			// bw.write(strRead);
+			// bw.newLine();
+			// strRead = req.readLine();
+			// bw.write(strRead + "\n");
+			// bw.newLine();
+			// }
+			//
+			// bw.close();
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 
-		outMedia.close();	
+		outMedia.close();
 	}
-	
-	
-	public void storeHeader(String filename,String err, String extension, PrintStream outMedia, byte[] fileContents){
+
+	public void storeHeader(String filename, String err, String extension, PrintStream outMedia, int size) {
 		
+		try {
+
+		File file = new File( filename  + "_header.txt");
+		if (!file.exists()) {
+			file.createNewFile();
+		}
+		FileWriter fw = new FileWriter( filename + "_header.txt", true);
+
+		BufferedWriter bw = new BufferedWriter(fw);
+
+		bw.write("HTTP/1.0 " + err);
+		bw.newLine();
+		bw.write("Content-Type: image/" + extension);
+		bw.newLine();
+		bw.write("Server: Bot");
+		bw.newLine();
+		bw.write("Content-Length: " + size);
+		bw.newLine();
+		
+		bw.close();
+		
+		}
+		catch(IOException e)
+		{
+			
+		}
 	}
-	
+
 	public void doPut(String req, PrintStream out, String root) {
 		try {
 			out.println(req);
@@ -346,18 +377,18 @@ public class WebServer {
 
 		if (request != null && request.contains(".")) {
 			String[] result = request.split("\\.");
-			return result[result.length - 1 ];
+			return result[result.length - 1];
 		} else {
 			return "none";
 		}
 
 	}
 
-	void Header(String err, String extension, PrintStream outMedia, byte[] fileContents) {
+	void Header(String err, String extension, PrintStream outMedia, int size) {
 		outMedia.println("HTTP/1.0 " + err);
 		outMedia.println("Content-Type: image/" + extension);
 		outMedia.println("Server: Bot");
-		outMedia.println("Content-Length: " + fileContents.length);
+		outMedia.println("Content-Length: " + size);
 
 		// this blank line signals the end of the headers
 		outMedia.println("");
