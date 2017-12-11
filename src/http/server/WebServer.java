@@ -264,12 +264,16 @@ public class WebServer {
 			}*/
 			
 			//write header in a file 
-			//print header du resource.ext_header.txt
-			//print header
 			storeHeader(root + req, err, extension, outMedia, fileContents.length);
 			//build equivalent fileContents pour le nouveau fichier
-			Header(err, "txt", outMedia, )
-			
+			String err_txt ="200 OK";
+			Path path_txt = Paths.get(root + req +"_header.txt");
+			byte[] txtContents = Files.readAllBytes(path_txt);
+			//print header du resource.ext_header.txt
+			Header(err_txt, "txt", outMedia, txtContents.length);
+			//print header.txt
+			outMedia.write(txtContents);
+			outMedia.close();
 			
 			
 			// String strRead = req.readLine();
