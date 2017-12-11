@@ -45,7 +45,6 @@ public class WebServer {
 		}
 
 		System.out.println("Waiting for connection");
-		int status = 200;
 		int i = 0;
 		for (;;) {
 			try {
@@ -148,7 +147,9 @@ public class WebServer {
 		try {
 
 			outMedia.flush();
-
+			
+			if (req.equals("")) req = "welcome.html"; 
+				
 			String extension = getExtension(req);
 			String err = "200 OK";
 
