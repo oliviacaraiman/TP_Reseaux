@@ -169,6 +169,18 @@ public class WebServer {
 				outMedia.write(fileContents);
 				outMedia.close();
 
+			}else if (extension.equals("mp3")) {
+
+				Header(err, "audio", extension, outMedia, fileContents.length);
+				outMedia.write(fileContents);
+				outMedia.close();
+
+			}else if (extension.equals("mp4")) {
+
+				Header(err, "video", extension, outMedia, fileContents.length);
+				outMedia.write(fileContents);
+				outMedia.close();
+
 			}
 		} catch (IOException e) {
 
