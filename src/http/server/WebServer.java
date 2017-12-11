@@ -2,6 +2,7 @@
 
 package http.server;
 
+import java.awt.image.RenderedImage;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -82,7 +83,6 @@ public class WebServer {
 					// str = "GET /test.txt";
 					if (str != null && str.substring(0, 3).equals("GET")) {
 						String request = str.substring(5, str.length() - " HTTP\1.1".length()-1);
-						String request = str.substring(5, str.length() - " HTTP\1.1".length() - 1);
 						System.out.println(request);
 						// type "GET /path" = on enlève le /
 						//if (!request.equals("favicon.ico"))
@@ -144,11 +144,6 @@ public class WebServer {
 			byte[] fileContents = Files.readAllBytes(path);
 			outMedia.println("the extension is : " +extension);
 			
-			String textPath = root + req;
-			Path path = Paths.get(textPath);
-			byte[] fileContents = Files.readAllBytes(path);
-			
-			
 			
 			if (extension.equals("txt")) {
 //				FileReader fr = new FileReader("C:\\Users\\Lucie\\git\\TP_Reseaux\\src\\" + req);
@@ -180,29 +175,14 @@ public class WebServer {
 				//BufferedImage bufferedImage = ImageIO.read(new ByteArrayInputStream(fileContents));
 				ImageIO.write(img, extension, outMedia);
 				
+				 //BufferedImage bufferedImage = ImageIO.read(new ByteArrayInputStream(fileContents));
+				 //outMedia.write("Content-Type: image/png");
+				 //outMedia.write(fileContents);
+				 //ImageIO.write(bufferedImage, extension, outMedia);
 				
 				outMedia.close();
 
-			} else if (extension.equals("png") || extension.equals("jpeg") || extension.equals("jpg")
-					|| extension.equals("ico")) {
-				// PROBLEMe
-
-//				outMedia.append("HTTP/1.0 200 OK \r\n");
-//				out.append("Content-Type: image/png \r\n");
-//				out.append("Server: Bot \r\n");
-//				out.append("\r\n");
-//				out.print("<h4>Contenu du fichier</h4>");
-
-				 BufferedImage bufferedImage = ImageIO.read(new ByteArrayInputStream(fileContents));
-				 //outMedia.write("Content-Type: image/png");
-				 outMedia.write(fileContents);
-				 ImageIO.write(bufferedImage, extension, outMedia);
-
-			
-
-				outMedia.close();
 			}
-
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -334,16 +314,15 @@ public class WebServer {
 			String[] result = request.split("\\.");
 						
 			return result[result.length -1];
-		String ext = "none";
-		if (request != null && request.contains(".")) {
-			String[] result = request.split("[.]");
-			ext = result[1];
-
+		}else {
+			return "none";
 		}
-		return ext;
 	}
 }
 
 // contenu binaire = fileinputstream
+
+//headers construction
+// https://stackoverflow.com/questions/20889076/constructing-http-headers-for-java-http-server
 
 //http://www.javapractices.com/topic/TopicAction.do?Id=245
