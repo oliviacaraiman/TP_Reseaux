@@ -80,9 +80,9 @@ public class WebServer {
 				// String root = "L:\\Mes
 				// Documents\\RESEAUX\\HTTPServer\\src\\";
 				// String root = "C:\\Users\\Lucie\\git\\TP_Reseaux\\src\\";
-				// String root = "D:\\java\\TP2_Reseaux\\src\\";
+				 String root = "D:\\java\\TP2_Reseaux\\src\\";
 
-				String root = "L:\\Mes documents\\RESEAUX\\HTTPServer\\src\\";
+				//String root = "L:\\Mes documents\\RESEAUX\\HTTPServer\\src\\";
 
 				String str = ".";
 				while (str != null && !str.equals("")) {
@@ -150,7 +150,7 @@ public class WebServer {
 			Path path = Paths.get(root + req);
 			byte[] fileContents = Files.readAllBytes(path);
 			
-			if (extension.equals("txt") || extension.equals("html")) {
+			if (extension.equals("txt") || extension.equals("html") || extension.equals("mp3")) {
 				
 				Header(err, extension, outMedia,fileContents);
 				outMedia.write(fileContents);
@@ -355,7 +355,7 @@ public class WebServer {
 
 	void Header(String err, String extension, PrintStream outMedia, byte[] fileContents) {
 		outMedia.println("HTTP/1.0 " + err);
-		outMedia.println("Content-Type: image/" + extension);
+		outMedia.println("Content-Type: image" /*+ extension*/);
 		outMedia.println("Server: Bot");
 		outMedia.println("Content-Length: " + fileContents.length);
 
