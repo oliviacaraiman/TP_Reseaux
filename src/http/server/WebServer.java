@@ -272,6 +272,9 @@ public class WebServer {
 			//print header du resource.ext_header.txt
 			Header(err_txt,"text", "txt", outMedia, txtContents.length);
 			//print header.txt
+			outMedia.println("");
+			outMedia.println("<h1>boo</h1>");
+			//pas oublier de sauter une ligne pour différencier du header
 			outMedia.write(txtContents);
 			outMedia.close();
 			
@@ -321,21 +324,22 @@ public class WebServer {
 		File file = new File( filename  + "_header.txt");
 		if (!file.exists()) {
 			file.createNewFile();
+			FileWriter fw = new FileWriter( filename + "_header.txt", true);
+
+			BufferedWriter bw = new BufferedWriter(fw);
+
+			bw.write("<h1>HTTP/1.0 " + err +"</h1>");
+			bw.newLine();
+			bw.write("<h1>Content-Type: " + type +"/" + extension+"</h1>");
+			bw.newLine();
+			bw.write("Server: Bot");
+			bw.newLine();
+			bw.write("Content-Length: " + size);
+			bw.newLine();
+			
+			bw.close();
 		}
-		FileWriter fw = new FileWriter( filename + "_header.txt", true);
-
-		BufferedWriter bw = new BufferedWriter(fw);
-
-		bw.write("HTTP/1.0 " + err);
-		bw.newLine();
-		bw.write("Content-Type: " + type +"/" + extension);
-		bw.newLine();
-		bw.write("Server: Bot");
-		bw.newLine();
-		bw.write("Content-Length: " + size);
-		bw.newLine();
 		
-		bw.close();
 		
 		}
 		catch(IOException e)
