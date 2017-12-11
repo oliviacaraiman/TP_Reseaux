@@ -28,6 +28,7 @@ Content-Disposition: form-data; name="<!DOCTYPE html>"
 Content-Disposition: form-data; name="<!DOCTYPE html>"
 ------WebKitFormBoundary4VNUw8ld7dGLVsiH
 Content-Disposition: form-data; name="<!DOCTYPE html>"
+<<<<<<< HEAD
 ----------------------------586938188998987561672359
 Content-Disposition: form-data; name="boo"
 
@@ -48,4 +49,11 @@ Content-Disposition: form-data; name="boo"
 
 bhu=one
 null
+=======
+------WebKitFormBoundaryQybpQqtBApAPnYHI
+Content-Disposition: form-data; name="<!DOCTYPE html>"
+
+Content-Disposition: form-data; name="<!DOCTYPE html>"
+
+>>>>>>> branch 'master' of https://github.com/oliviacaraiman/TP_Reseaux.git
 

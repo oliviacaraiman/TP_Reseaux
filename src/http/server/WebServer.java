@@ -45,6 +45,7 @@ public class WebServer {
 		}
 
 		System.out.println("Waiting for connection");
+		int status = 200;
 		int i = 0;
 		for (;;) {
 			try {
@@ -77,12 +78,12 @@ public class WebServer {
 					outMedia.flush();
 				}
 
-				// String root = "L:\\Mes
-				// Documents\\RESEAUX\\HTTPServer\\src\\";
-				 String root = "C:\\Users\\Lucie\\git\\TP_Reseaux\\src\\";
+				// String root = "C:\\Users\\Lucie\\git\\TP_Reseaux\\src\\";
+				String root = "D:\\java\\TP2_Reseaux\\src\\";
 				// String root = "D:\\java\\TP2_Reseaux\\src\\";
 
-				//String root = "L:\\Mes documents\\RESEAUX\\HTTPServer\\src\\";
+				// String root = "L:\\Mes
+				// documents\\RESEAUX\\HTTPServer\\src\\";
 
 				String str = ".";
 				while (str != null && !str.equals("")) {
@@ -116,6 +117,9 @@ public class WebServer {
 						// type "GET /path" = on enlève le /
 						// doDelete(request, out, root);
 						str = "";
+					} else {
+						setStatus(501, outMedia);;
+
 					}
 
 				}
@@ -140,19 +144,20 @@ public class WebServer {
 		ws.start();
 	}
 
-	public void doGet(String req, PrintStream outMedia, String root) {
+	public void doGet(String req, PrintStream outMedia, String root) throws IOException {
 		try {
 
 			outMedia.flush();
 
 			String extension = getExtension(req);
 			String err = "200 OK";
+
 			Path path = Paths.get(root + req);
 			byte[] fileContents = Files.readAllBytes(path);
 
 			if (extension.equals("txt") || extension.equals("html")) {
 
-				Header(err, "text",extension, outMedia, fileContents.length);
+				Header(err, "text", extension, outMedia, fileContents.length);
 				outMedia.write(fileContents);
 				outMedia.close();
 
@@ -162,18 +167,34 @@ public class WebServer {
 				outMedia.write(fileContents);
 				outMedia.close();
 
+			}else if (extension.equals("mp3")) {
+
+				Header(err, "audio", extension, outMedia, fileContents.length);
+				outMedia.write(fileContents);
+				outMedia.close();
+
+			}else if (extension.equals("mp4")) {
+
+				Header(err, "video", extension, outMedia, fileContents.length);
+				outMedia.write(fileContents);
+				outMedia.close();
+
 			}
 		} catch (IOException e) {
+
+			setStatus(404, outMedia);
 			e.printStackTrace();
 		}
 
 		/*
 		 * out.println("<HTML>"); //out.println("<HEAD> <TITLE> Hello," + name +
-		 * "</TITLE></HEAD>"); out.println("<BODY>"); //out.println("Hello, " + name);
-		 * out.println("</BODY>"); out.println("</HTML>");
+		 * "</TITLE></HEAD>"); out.println("<BODY>"); //out.println("Hello, " +
+		 * name); out.println("</BODY>"); out.println("</HTML>");
 		 */
 		outMedia.close();
 	}
+
+
 
 	public void doPost(BufferedReader req, PrintStream outMedia, String root) {
 		try {
@@ -273,8 +294,8 @@ public class WebServer {
 			String err = "200 OK";
 			Path path = Paths.get(root + req);
 			byte[] fileContents = Files.readAllBytes(path);
-			
-			String type ="";
+
+			String type = "";
 
 			if (extension.equals("txt") || extension.equals("html")) {
 
@@ -285,23 +306,20 @@ public class WebServer {
 				type = "image";
 
 			}
-			
-			//write header in a file 
+
+			// write header in a file
 			storeHeader(root + req, err, type, extension, outMedia, fileContents.length);
-			//build equivalent fileContents pour le nouveau fichier
-			String err_txt ="200 OK";
-			Path path_txt = Paths.get(root + req +"_header.txt");
+			// build equivalent fileContents pour le nouveau fichier
+			String err_txt = "200 OK";
+			Path path_txt = Paths.get(root + req + "_header.txt");
 			byte[] txtContents = Files.readAllBytes(path_txt);
-			//print header du resource.ext_header.txt
-			Header(err_txt,"text", "txt", outMedia, txtContents.length);
-			//print header.txt
-			outMedia.println("");
-			outMedia.println("<h1>boo</h1>");
-			//pas oublier de sauter une ligne pour différencier du header
+			// print header du resource.ext_header.txt
+			Header(err_txt, "text", "txt", outMedia, txtContents.length);
+			// print header.txt
+
 			outMedia.write(txtContents);
 			outMedia.close();
-			
-			
+
 			// String strRead = req.readLine();
 			// // lecture de head
 			// while (strRead != null && !strRead.equals("")) {
@@ -340,34 +358,33 @@ public class WebServer {
 		outMedia.close();
 	}
 
-	public void storeHeader(String filename, String err, String type, String extension, PrintStream outMedia, int size) {
-		
+	public void storeHeader(String filename, String err, String type, String extension, PrintStream outMedia,
+			int size) {
+
 		try {
 
-		File file = new File( filename  + "_header.txt");
-		if (!file.exists()) {
-			file.createNewFile();
-			FileWriter fw = new FileWriter( filename + "_header.txt", true);
+			File file = new File(filename + "_header.txt");
+			if (!file.exists()) {
+				file.createNewFile();
+			}
+			FileWriter fw = new FileWriter(filename + "_header.txt", true);
 
 			BufferedWriter bw = new BufferedWriter(fw);
 
-			bw.write("<h1>HTTP/1.0 " + err +"</h1>");
+			bw.write("HTTP/1.0 " + err);
 			bw.newLine();
-			bw.write("<h1>Content-Type: " + type +"/" + extension+"</h1>");
+			bw.write("Content-Type: " + type + "/" + extension);
 			bw.newLine();
 			bw.write("Server: Bot");
 			bw.newLine();
 			bw.write("Content-Length: " + size);
 			bw.newLine();
-			
+
 			bw.close();
-		}
-		
-		
-		}
-		catch(IOException e)
-		{
-			
+
+		} catch (IOException e) {
+
+
 		}
 	}
 
@@ -415,9 +432,44 @@ public class WebServer {
 
 	}
 
+	
+	public void setStatus(int status, PrintStream outMedia) throws IOException {
+		switch (status){
+		case 404: 
+		{
+			System.out.println("File not found !");
+			String s = "<h1>404 Not found !</h1>";
+			byte[] fileContents = s.getBytes();
+			Header("404 not found", "text", "html", outMedia, fileContents.length);
+			outMedia.write(fileContents);
+			outMedia.close();
+			break;
+		}
+		case 403: 
+		{
+			String s = "<h1>403 Forbidden !</h1>";
+			byte[] fileContents = s.getBytes();
+			Header("403 forbidden", "text", "html", outMedia, fileContents.length);
+			outMedia.write(fileContents);
+			outMedia.close();
+			break;
+		}
+		case 501:
+		{
+			System.out.println("Not implemented!");
+			String s = "<h1>501 Not implemented !</h1>";
+			byte[] fileContents = s.getBytes();
+			Header("501 not implemented", "text", "html", outMedia, fileContents.length);
+			outMedia.write(fileContents);
+			outMedia.close();
+			break;
+		}
+		}
+	}
+	
 	void Header(String err, String type, String extension, PrintStream outMedia, int size) {
 		outMedia.println("HTTP/1.0 " + err);
-		outMedia.println("Content-Type:"+ type + "/" + extension);
+		outMedia.println("Content-Type:" + type + "/" + extension);
 		outMedia.println("Server: Bot");
 		outMedia.println("Content-Length: " + size);
 
