@@ -283,6 +283,7 @@ public class WebServer {
 			// print header du resource.ext_header.txt
 			Header(err_txt, "text", "txt", outMedia, txtContents.length);
 			// print header.txt
+
 			outMedia.write(txtContents);
 			outMedia.close();
 
@@ -349,6 +350,7 @@ public class WebServer {
 			bw.close();
 
 		} catch (IOException e) {
+
 
 		}
 	}
