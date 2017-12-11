@@ -316,7 +316,7 @@ public class WebServer {
 			// print header du resource.ext_header.txt
 			Header(err_txt, "text", "txt", outMedia, txtContents.length);
 			// print header.txt
-
+			outMedia.print("\n");
 			outMedia.write(txtContents);
 			outMedia.close();
 
