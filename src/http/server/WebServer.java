@@ -79,10 +79,10 @@ public class WebServer {
 
 				// String root = "L:\\Mes
 				// Documents\\RESEAUX\\HTTPServer\\src\\";
-				// String root = "C:\\Users\\Lucie\\git\\TP_Reseaux\\src\\";
+				 String root = "C:\\Users\\Lucie\\git\\TP_Reseaux\\src\\";
 				// String root = "D:\\java\\TP2_Reseaux\\src\\";
 
-				String root = "L:\\Mes documents\\RESEAUX\\HTTPServer\\src\\";
+				//String root = "L:\\Mes documents\\RESEAUX\\HTTPServer\\src\\";
 
 				String str = ".";
 				while (str != null && !str.equals("")) {
@@ -152,13 +152,13 @@ public class WebServer {
 
 			if (extension.equals("txt") || extension.equals("html")) {
 
-				Header(err, extension, outMedia, fileContents.length);
+				Header(err, "text",extension, outMedia, fileContents.length);
 				outMedia.write(fileContents);
 				outMedia.close();
 
 			} else if (extension.equals("png") || extension.equals("jpeg") || extension.equals("jpg")) {
 
-				Header(err, extension, outMedia, fileContents.length);
+				Header(err, "image", extension, outMedia, fileContents.length);
 				outMedia.write(fileContents);
 				outMedia.close();
 
@@ -250,27 +250,27 @@ public class WebServer {
 			String err = "200 OK";
 			Path path = Paths.get(root + req);
 			byte[] fileContents = Files.readAllBytes(path);
+			
+			String type ="";
 
-			/*if (extension.equals("txt") || extension.equals("html")) {
+			if (extension.equals("txt") || extension.equals("html")) {
 
-				Header(err, extension, outMedia, fileContents);
-				outMedia.close();
+				type = "text";
 
 			} else if (extension.equals("png") || extension.equals("jpeg") || extension.equals("jpg")) {
 
-				Header(err, extension, outMedia, fileContents);
-				outMedia.close();
+				type = "image";
 
-			}*/
+			}
 			
 			//write header in a file 
-			storeHeader(root + req, err, extension, outMedia, fileContents.length);
+			storeHeader(root + req, err, type, extension, outMedia, fileContents.length);
 			//build equivalent fileContents pour le nouveau fichier
 			String err_txt ="200 OK";
 			Path path_txt = Paths.get(root + req +"_header.txt");
 			byte[] txtContents = Files.readAllBytes(path_txt);
 			//print header du resource.ext_header.txt
-			Header(err_txt, "txt", outMedia, txtContents.length);
+			Header(err_txt,"text", "txt", outMedia, txtContents.length);
 			//print header.txt
 			outMedia.write(txtContents);
 			outMedia.close();
@@ -314,7 +314,7 @@ public class WebServer {
 		outMedia.close();
 	}
 
-	public void storeHeader(String filename, String err, String extension, PrintStream outMedia, int size) {
+	public void storeHeader(String filename, String err, String type, String extension, PrintStream outMedia, int size) {
 		
 		try {
 
@@ -328,7 +328,7 @@ public class WebServer {
 
 		bw.write("HTTP/1.0 " + err);
 		bw.newLine();
-		bw.write("Content-Type: image/" + extension);
+		bw.write("Content-Type: " + type +"/" + extension);
 		bw.newLine();
 		bw.write("Server: Bot");
 		bw.newLine();
@@ -388,9 +388,9 @@ public class WebServer {
 
 	}
 
-	void Header(String err, String extension, PrintStream outMedia, int size) {
+	void Header(String err, String type, String extension, PrintStream outMedia, int size) {
 		outMedia.println("HTTP/1.0 " + err);
-		outMedia.println("Content-Type: image/" + extension);
+		outMedia.println("Content-Type:"+ type + "/" + extension);
 		outMedia.println("Server: Bot");
 		outMedia.println("Content-Length: " + size);
 
