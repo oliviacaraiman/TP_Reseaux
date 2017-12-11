@@ -72,8 +72,8 @@ public class WebServer {
 				outMedia.flush();
 				
 				//String root = "L:\\Mes Documents\\RESEAUX\\HTTPServer\\src\\";
-				//String root = "C:\\Users\\Lucie\\git\\TP_Reseaux\\src\\";
-				String root = "D:\\java\\TP2_Reseaux\\src\\";
+				String root = "C:\\Users\\Lucie\\git\\TP_Reseaux\\src\\";
+				//String root = "D:\\java\\TP2_Reseaux\\src\\";
 
 				String str = ".";
 				while (str != null && !str.equals("")) {
@@ -169,16 +169,26 @@ public class WebServer {
 //				byte[] fileContents =  Files.readAllBytes(path);
 //				outMedia.write(fileContents);
 //				
+				
+				/*
 				File srcimg = new File(root +req);
 				RenderedImage img = ImageIO.read(srcimg);
 				
 				//BufferedImage bufferedImage = ImageIO.read(new ByteArrayInputStream(fileContents));
-				ImageIO.write(img, extension, outMedia);
+				ImageIO.write(img, extension, outMedia);*/
+				
+				
 				
 				 //BufferedImage bufferedImage = ImageIO.read(new ByteArrayInputStream(fileContents));
 				 //outMedia.write("Content-Type: image/png");
 				 //outMedia.write(fileContents);
 				 //ImageIO.write(bufferedImage, extension, outMedia);
+				
+				writer.writeBytes("HTTP/1.1 200 OK\r\n");
+				writer.writeBytes("Content-Type: image/gif\r\n");
+				writer.writeBytes("Content-Length: "+fileContents.length+"\r\n");
+				writer.writeBytes("\r\n");
+				writer.write(fileContents, 0, fileContents.length);
 				
 				outMedia.close();
 
