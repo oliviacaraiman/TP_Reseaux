@@ -210,6 +210,29 @@ public class WebServer {
 				bw.write(strRead + "\n");
 				bw.newLine();
 			}
+			
+			//tryna get content-type in HEADER !!!
+			String content_type = "";
+			while (strRead != null && !strRead.equals("")) {
+				// out.print("<h4>test</h4>");
+				
+				strRead = req.readLine();
+				String[] infos = strRead.split(":");
+				if(infos[0].equals("content-type") || infos[0].equals("Content-type"))
+				{
+					String[] contenttype = infos[1].split(";");
+					content_type = contenttype[0];
+				}
+			}
+			
+			if(content_type.equals("multipart/form-data")) 
+			{
+				//name="nameofthevariable"
+			}
+			else if(content_type.equals("application/x-www-form-urlencoded"))
+			{
+				//variable=value
+			}
 
 			bw.close();
 			/*
