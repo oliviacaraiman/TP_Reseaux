@@ -13,6 +13,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.LinkedList;
 
 import javax.imageio.ImageIO;
 
@@ -247,9 +248,20 @@ public class WebServer {
 				}
 			}
 			
+			//on a ateint le saut de ligne = end of the header avec la boucle d'avant donc on est bien dans le body
+			
+			LinkedList<String> received = new LinkedList<>()
 			if(content_type.equals("multipart/form-data")) 
 			{
 				//name="nameofthevariable"
+				while (strRead != null && !strRead.equals("")) {
+					// out.print("<h4>test</h4>");
+					
+					strRead = req.readLine();
+					String[] infos = strRead.split("\"");
+					received.add(infos[1]);
+				}
+				
 			}
 			else if(content_type.equals("application/x-www-form-urlencoded"))
 			{
