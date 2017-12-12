@@ -53,7 +53,10 @@ public class WebServer {
 				Socket remote = s.accept();
 				// remote is now the connected socket
 				System.out.println("Connection, sending data.");
-				BufferedReader in = new BufferedReader(new InputStreamReader(remote.getInputStream()));
+				InputStream readByte = remote.getInputStream();
+				BufferedReader in = new BufferedReader(new InputStreamReader(readByte));
+				
+				
 				// PrintWriter out = new PrintWriter(remote.getOutputStream());
 				OutputStream out = remote.getOutputStream();
 				PrintStream outMedia = new PrintStream(remote.getOutputStream());
@@ -78,13 +81,15 @@ public class WebServer {
 					outMedia.flush();
 				}
 
-				 String root = "C:\\Users\\Lucie\\git\\TP_Reseaux\\src\\";
+				//String root = "C:\\Users\\Lucie\\git\\TP_Reseaux\\src\\";
 				//String root = "D:\\java\\TP2_Reseaux\\src\\";
-				// String root = "D:\\java\\TP2_Reseaux\\src\\";
+				//String root = "D:\\java\\TP2_Reseaux\\src\\";
 
 				// String root = "L:\\Mes
 				// documents\\RESEAUX\\HTTPServer\\src\\";
-
+				String root ="C:\\Users\\lgalle\\git\\TP_Reseaux\\src\\";
+				 
+				 
 				String str = ".";
 				while (str != null && !str.equals("")) {
 					str = in.readLine();
@@ -96,16 +101,17 @@ public class WebServer {
 						System.out.println(request);
 						// type "GET /path" = on enlève le /
 						if (!request.equals("favicon.ico"))
-							doGet(request, outMedia, root);
+							doGet(request, outMedia);
 						str = "";
 					} else if (str != null && str.substring(0, 4).equals("POST")) {
 						String request = str.substring(6, str.length() - "HTTP\1.1".length() - 2);
 						// type "GET /path" = on enlève le /
-						doPost(in, outMedia, root);
+						
+						doPost(in, request, outMedia,readByte);
 						str = "";
 					} else if (str != null && str.substring(0, 4).equals("HEAD")) {
 						String request = str.substring(6, str.length() - "HTTP\1.1".length() - 2);
-						doHead(request, outMedia, root);
+						doHead(request, outMedia/*, root*/);
 						str = "";
 					} else if (str != null && str.substring(0, 3).equals("PUT")) {
 						String request = str.substring(5, str.length() - "HTTP\1.1".length() - 2);
@@ -115,7 +121,7 @@ public class WebServer {
 					} else if (str != null && str.substring(0, 6).equals("DELETE")) {
 						String request = str.substring(8, str.length() - "HTTP\1.1".length() - 2);
 						// type "GET /path" = on enlève le /
-						// doDelete(request, out, root);
+						doDelete(request, outMedia, root);
 						str = "";
 					} else {
 						setStatus(501, outMedia);;
@@ -144,7 +150,7 @@ public class WebServer {
 		ws.start();
 	}
 
-	public void doGet(String req, PrintStream outMedia, String root) throws IOException {
+	public void doGet(String req, PrintStream outMedia) throws IOException {
 		try {
 
 			outMedia.flush();
@@ -154,7 +160,7 @@ public class WebServer {
 			String extension = getExtension(req);
 			String err = "200 OK";
 
-			Path path = Paths.get(root + req);
+			Path path = Paths.get( req);
 			byte[] fileContents = Files.readAllBytes(path);
 
 			if (extension.equals("txt") || extension.equals("html")) {
@@ -198,97 +204,142 @@ public class WebServer {
 
 
 
-	public void doPost(BufferedReader req, PrintStream outMedia, String root) {
+	public void doPost(BufferedReader in, String req, PrintStream outMedia, InputStream readByte) throws IOException {
 		try {
-			/*
-			outMedia.println(req);
-			// FileReader fr = new FileReader("L:\\Mes
-			// Documents\\RESEAUX\\HTTPServer\\src\\" + req);
-			// BufferedReader br = new BufferedReader(fr);
-			String strRead = req.readLine();
-
-			// lecture de head
-			while (strRead != null && !strRead.equals("")) {
-				// out.print("<h4>test</h4>");
-				System.out.println("header: " + strRead);
-				// outMedia.print("<h1>" + strRead + "</h1>");
-				strRead = req.readLine();
-
-			}
-			// lecture du body
-			strRead = req.readLine();
-			File file = new File(root + "received.txt");
-			if (!file.exists()) {
-				file.createNewFile();
-			}
-			FileWriter fw = new FileWriter(root + "received.txt", true);
-
-			BufferedWriter bw = new BufferedWriter(fw);
-			while (strRead != null && !strRead.equals("")) {
-				// out.print("<h4>test</h4>");
-				outMedia.print("<h1>" + strRead + "</h1>");
-
-				bw.write(strRead);
-				bw.newLine();
-				strRead = req.readLine();
-				bw.write(strRead + "\n");
-				bw.newLine();
-			}*/
+			
 			
 			//tryna get content-type in HEADER !!!
-			String strRead = req.readLine();
+			
+			String strRead = in.readLine();
 			String content_type = "";
+			int content_length = 0;
 			while (strRead != null && !strRead.equals("")) {
 				// out.print("<h4>test</h4>");
 				
-				strRead = req.readLine();
+				strRead = in.readLine();
+				System.out.println("head : " + strRead);
 				String[] infos = strRead.split(":");
-				if(infos[0].equals("content-type") || infos[0].equals("Content-type"))
+				
+				if(infos[0].equals("content-length") || infos[0].equals("Content-length"))
 				{
-					String[] contenttype = infos[1].split(";");
-					content_type = contenttype[0];
+					content_length = Integer.parseInt(infos[1].substring(1, infos[1].length()));
 				}
 			}
 			
-			//on a ateint le saut de ligne = end of the header avec la boucle d'avant donc on est bien dans le body
+			System.out.println("sortir de head");
+	
 			
-			boolean infooutoftwo = false;
-			LinkedList<String> received = new LinkedList<>();
-			if(content_type.equals("multipart/form-data")) 
-			{
-				//name="nameofthevariable"
-				strRead = req.readLine();
-				while (strRead != null && !strRead.equals("")) {
-					// out.print("<h4>test</h4>");
-					String[] infos = strRead.split("\"");
-					received.add(infos[1]);
-					strRead = req.readLine();
-				}
+			//on a atteint le saut de ligne = end of the header avec la boucle d'avant donc on est bien dans le body
+			//on écrit au fur et à mesure ds le fichier donné par le POST
+			
+//			File file = new File(req);
+//			if (!file.exists()) {
+//				file.createNewFile();
+//			}
+			//System.out.println("before fos");
+			
+			//System.out.println("after fos");
+			//System.out.println(readByte.available());
+
+//			while(readByte.available()>0){
+//				fos.write(readByte.read());
+//				//System.out.println(readByte.available());
+//			}
+			
+			
+			
+//			FileWriter fw = new FileWriter(req + "received.txt", true);
+//
+//			BufferedWriter bw = new BufferedWriter(fw);
+			
+			System.out.println("before readLine");
+			
+			char charRead = (char)in.read();
+			
+			System.out.println("before while");
+			System.out.println("strRead : " + strRead);
+			FileOutputStream fos = new FileOutputStream(req,true);
+			
+			//content_length = 18;
+			while (content_length !=1 /*&& strRead != null && !strRead.equals("null")*/) {
+				//System.out.println("kjdnfdkls");
+				System.out.println(content_length);
+				//content_length -= strRead.length();
+				content_length--;
+				//strRead = strRead +"\n";
+				fos.write((byte)charRead);
+				//strRead = in.readLine();
+				charRead = (char)in.read();
+				System.out.println(charRead);
 				
 			}
-			else if(content_type.equals("application/x-www-form-urlencoded"))
-			{
-				//variable=value
-				strRead = req.readLine();
-				while (strRead != null && !strRead.equals("null")) {
-					// out.print("<h4>test</h4>");
-					
-					String[] infos = strRead.split("&");
-					for(int a =0; a < infos.length ; a++)
-					{
-						received.add(infos[a].split("=")[0]);	
-						received.add(infos[a].split("=")[1]);
-					}
-					
-					infooutoftwo =true;
-					strRead = req.readLine();
-				}				
-			}
+			//System.out.println("kjdnfdkls");
+			System.out.println(content_length);
+			fos.write((byte)charRead);
+			fos.write("\n".getBytes());
+			fos.close();
 			
-			for(int a = 0; a < received.size() ; a++)
-			{
-				System.out.println(received.get(a));
-			}
+			String extension = getExtension(req);
+			//String err = "200 OK";
+
+			Path path = Paths.get( req);
+			byte[] fileContents = Files.readAllBytes(path);
+			
+			Header("200 OK", "text", extension, outMedia, fileContents.length);
+			outMedia.write(fileContents);
+			outMedia.close();
+			
+//			
+//			boolean infooutoftwo = false;
+//			LinkedList<String> received = new LinkedList<>();
+//			if(content_type.equals("multipart/form-data")) 
+//			{
+//				//name="nameofthevariable"
+//				strRead = req.readLine();
+//				while (strRead != null && !strRead.equals("")) {
+//					// out.print("<h4>test</h4>");
+//					String[] infos = strRead.split("\"");
+//					received.add(infos[1]);
+//					bw.write(infos[1]);
+//					bw.newLine();
+//					strRead = req.readLine();
+//				}
+//				
+//			}
+//			else if(content_type.equals("application/x-www-form-urlencoded"))
+//			{
+//				//variable=value
+//				strRead = req.readLine();
+//				while (strRead != null && !strRead.equals("null")) {
+//					// out.print("<h4>test</h4>");
+//					
+//					String[] infos = strRead.split("&");
+//					for(int a =0; a < infos.length ; a++)
+//					{
+//						received.add(infos[a].split("=")[0]);	
+//						received.add(infos[a].split("=")[1]);
+//					}
+//					
+//					infooutoftwo = true;
+//					strRead = req.readLine();
+//				}				
+//			}
+//			
+//			
+//			while (strRead != null && !strRead.equals("")) {
+//				
+//				outMedia.print("<h1>" + strRead + "</h1>");
+//
+//				bw.write(strRead);
+//				bw.newLine();
+//				strRead = req.readLine();
+//				bw.write(strRead + "\n");
+//				bw.newLine();
+//			}
+//			for(int a = 0; a < received.size() ; a++)
+//			{
+//				System.out.println(received.get(a));
+//			}
 
 			//bw.close();
 			/*
@@ -296,19 +347,21 @@ public class WebServer {
 			 */
 			// br.close();
 		} catch (IOException e) {
+			setStatus(404, outMedia);
 			e.printStackTrace();
+			
 		}
 
 		outMedia.close();
 	}
 
-	public void doHead(String req, PrintStream outMedia, String root) {
+	public void doHead(String req, PrintStream outMedia) throws IOException {
 		try {
 			
 
 			String extension = getExtension(req);
 			String err = "200 OK";
-			Path path = Paths.get(root + req);
+			Path path = Paths.get(req);
 			byte[] fileContents = Files.readAllBytes(path);
 
 			String type = "";
@@ -330,41 +383,15 @@ public class WebServer {
 		
 
 		} catch (IOException e) {
+			setStatus(404, outMedia);
 			e.printStackTrace();
+			
 		}
 
 		outMedia.close();
 	}
 
-	public void storeHeader(String filename, String err, String type, String extension, PrintStream outMedia,
-			int size) {
-
-		try {
-
-			File file = new File(filename + "_header.txt");
-			if (!file.exists()) {
-				file.createNewFile();
-			}
-			FileWriter fw = new FileWriter(filename + "_header.txt", true);
-
-			BufferedWriter bw = new BufferedWriter(fw);
-
-			bw.write("HTTP/1.0 " + err);
-			bw.newLine();
-			bw.write("Content-Type: " + type + "/" + extension);
-			bw.newLine();
-			bw.write("Server: Bot");
-			bw.newLine();
-			bw.write("Content-Length: " + size);
-			bw.newLine();
-
-			bw.close();
-
-		} catch (IOException e) {
-
-
-		}
-	}
+	
 
 	public void doPut(String req, PrintStream out, String root) {
 		try {
@@ -387,7 +414,7 @@ public class WebServer {
 		out.close();
 	}
 
-	public void doDelete(String req, PrintWriter out, String root) {
+	public void doDelete(String req, PrintStream out, String root) {
 		try {
 			Path path = FileSystems.getDefault().getPath(root + req);
 			Files.deleteIfExists(path);
