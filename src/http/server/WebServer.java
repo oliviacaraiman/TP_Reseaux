@@ -250,22 +250,33 @@ public class WebServer {
 			
 			//on a ateint le saut de ligne = end of the header avec la boucle d'avant donc on est bien dans le body
 			
+			boolean infooutoftwo = false;
 			LinkedList<String> received = new LinkedList<>()
 			if(content_type.equals("multipart/form-data")) 
 			{
 				//name="nameofthevariable"
+				strRead = req.readLine();
 				while (strRead != null && !strRead.equals("")) {
 					// out.print("<h4>test</h4>");
-					
-					strRead = req.readLine();
 					String[] infos = strRead.split("\"");
 					received.add(infos[1]);
+					strRead = req.readLine();
 				}
 				
 			}
 			else if(content_type.equals("application/x-www-form-urlencoded"))
 			{
 				//variable=value
+				strRead = req.readLine();
+				while (strRead != null && !strRead.equals("null")) {
+					// out.print("<h4>test</h4>");
+					
+					String[] infos = strRead.split("=");
+					received.add(infos[0]);					
+					received.add(infos[1]);
+					infooutoftwo =true;
+					strRead = req.readLine();
+				}				
 			}
 
 			bw.close();
