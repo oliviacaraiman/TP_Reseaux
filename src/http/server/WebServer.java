@@ -78,8 +78,8 @@ public class WebServer {
 					outMedia.flush();
 				}
 
-				// String root = "C:\\Users\\Lucie\\git\\TP_Reseaux\\src\\";
-				String root = "D:\\java\\TP2_Reseaux\\src\\";
+				 String root = "C:\\Users\\Lucie\\git\\TP_Reseaux\\src\\";
+				//String root = "D:\\java\\TP2_Reseaux\\src\\";
 				// String root = "D:\\java\\TP2_Reseaux\\src\\";
 
 				// String root = "L:\\Mes
@@ -200,6 +200,7 @@ public class WebServer {
 
 	public void doPost(BufferedReader req, PrintStream outMedia, String root) {
 		try {
+			/*
 			outMedia.println(req);
 			// FileReader fr = new FileReader("L:\\Mes
 			// Documents\\RESEAUX\\HTTPServer\\src\\" + req);
@@ -232,9 +233,10 @@ public class WebServer {
 				strRead = req.readLine();
 				bw.write(strRead + "\n");
 				bw.newLine();
-			}
+			}*/
 			
 			//tryna get content-type in HEADER !!!
+			String strRead = req.readLine();
 			String content_type = "";
 			while (strRead != null && !strRead.equals("")) {
 				// out.print("<h4>test</h4>");
@@ -251,7 +253,7 @@ public class WebServer {
 			//on a ateint le saut de ligne = end of the header avec la boucle d'avant donc on est bien dans le body
 			
 			boolean infooutoftwo = false;
-			LinkedList<String> received = new LinkedList<>()
+			LinkedList<String> received = new LinkedList<>();
 			if(content_type.equals("multipart/form-data")) 
 			{
 				//name="nameofthevariable"
@@ -271,15 +273,24 @@ public class WebServer {
 				while (strRead != null && !strRead.equals("null")) {
 					// out.print("<h4>test</h4>");
 					
-					String[] infos = strRead.split("=");
-					received.add(infos[0]);					
-					received.add(infos[1]);
+					String[] infos = strRead.split("&");
+					for(int a =0; a < infos.length ; a++)
+					{
+						received.add(infos[a].split("=")[0]);	
+						received.add(infos[a].split("=")[1]);
+					}
+					
 					infooutoftwo =true;
 					strRead = req.readLine();
 				}				
 			}
+			
+			for(int a = 0; a < received.size() ; a++)
+			{
+				System.out.println(received.get(a));
+			}
 
-			bw.close();
+			//bw.close();
 			/*
 			 * bw.write(out + "\n"); bw.newLine();
 			 */
