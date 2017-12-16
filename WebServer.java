@@ -57,6 +57,17 @@ public class WebServer {
 				InputStream readByte = remote.getInputStream();
 				BufferedReader in = new BufferedReader(new InputStreamReader(readByte));
 				PrintStream outMedia = new PrintStream(remote.getOutputStream());
+				
+				if (i == 0) {
+					outMedia.println("HTTP/1.0 200 OK");
+					outMedia.println("Content-Type: text/html");
+					outMedia.println("Server: Bot");
+					// this blank line signals the end of the headers
+					outMedia.println("");
+					// Send the HTML page
+					outMedia.println("<H1>Welcome to the Ultra Mini-WebServer</H1>");
+					outMedia.flush();
+				}
 
 				// read the data sent. We basically ignore it,
 				// stop reading once a blank line is hit. This
@@ -64,7 +75,7 @@ public class WebServer {
 				// headers.
 
 				// Send the response for the welcome page
-				doGet("",outMedia);
+			//	doGet("",outMedia);
 				 
 				/**
 				 * read the HTTP request and decide which of the following methods is called
