@@ -13,6 +13,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
 import java.util.LinkedList;
 
 import javax.imageio.ImageIO;
@@ -55,21 +56,8 @@ public class WebServer {
 				System.out.println("Connection, sending data.");
 				InputStream readByte = remote.getInputStream();
 				BufferedReader in = new BufferedReader(new InputStreamReader(readByte));
-				
-				
-				// PrintWriter out = new PrintWriter(remote.getOutputStream());
-				OutputStream out = remote.getOutputStream();
 				PrintStream outMedia = new PrintStream(remote.getOutputStream());
-
-				// BufferedOutputstream
-
-				// read the data sent. We basically ignore it,
-				// stop reading once a blank line is hit. This
-				// blank line signals the end of the client HTTP
-				// headers.
-
-				// Send the response
-				// Send the headers
+				
 				if (i == 0) {
 					outMedia.println("HTTP/1.0 200 OK");
 					outMedia.println("Content-Type: text/html");
@@ -81,32 +69,30 @@ public class WebServer {
 					outMedia.flush();
 				}
 
-				//String root = "C:\\Users\\Lucie\\git\\TP_Reseaux\\src\\";
-				//String root = "D:\\java\\TP2_Reseaux\\src\\";
-				//String root = "D:\\java\\TP2_Reseaux\\src\\";
+				// read the data sent. We basically ignore it,
+				// stop reading once a blank line is hit. This
+				// blank line signals the end of the client HTTP
+				// headers.
 
-				// String root = "L:\\Mes
-				// documents\\RESEAUX\\HTTPServer\\src\\";
-				String root ="C:\\Users\\lgalle\\git\\TP_Reseaux\\src\\";
+				// Send the response for the welcome page
+			//	doGet("",outMedia);
 				 
-				 
+				/**
+				 * read the HTTP request and decide which of the following methods is called
+				 */
 				String str = ".";
 				while (str != null && !str.equals("")) {
 					str = in.readLine();
 
 					System.out.println(str);
-					// str = "GET /test.txt";
 					if (str != null && str.substring(0, 3).equals("GET")) {
 						String request = str.substring(5, str.length() - "HTTP\1.1".length() - 2);
 						System.out.println(request);
-						// type "GET /path" = on enlève le /
 						if (!request.equals("favicon.ico"))
 							doGet(request, outMedia);
 						str = "";
 					} else if (str != null && str.substring(0, 4).equals("POST")) {
 						String request = str.substring(6, str.length() - "HTTP\1.1".length() - 2);
-						// type "GET /path" = on enlève le /
-						
 						doPost(in, request, outMedia,readByte);
 						str = "";
 					} else if (str != null && str.substring(0, 4).equals("HEAD")) {
@@ -115,19 +101,15 @@ public class WebServer {
 						str = "";
 					} else if (str != null && str.substring(0, 3).equals("PUT")) {
 						String request = str.substring(5, str.length() - "HTTP\1.1".length() - 2);
-						// type "GET /path" = on enlève le /
-						// doPut(request, outMedia, root);
+						//doPut(request, outMedia);
 						str = "";
 					} else if (str != null && str.substring(0, 6).equals("DELETE")) {
 						String request = str.substring(8, str.length() - "HTTP\1.1".length() - 2);
-						// type "GET /path" = on enlève le /
-						doDelete(request, outMedia, root);
+						doDelete(request, outMedia);
 						str = "";
 					} else {
 						setStatus(501, outMedia);;
-
 					}
-
 				}
 				outMedia.flush();
 				remote.close();
@@ -149,10 +131,16 @@ public class WebServer {
 		WebServer ws = new WebServer();
 		ws.start();
 	}
+	
+	/**
+	 * HTTP GET method, returning the while web page identified by the URL
+	 * @param req : the requested resource
+	 * @param outMedia : the output stream (to send the response to the request)
+	 * @throws IOException
+	 */
 
 	public void doGet(String req, PrintStream outMedia) throws IOException {
 		try {
-
 			outMedia.flush();
 			
 			if (req.equals("")) req = "welcome.html"; 
@@ -189,99 +177,51 @@ public class WebServer {
 
 			}
 		} catch (IOException e) {
-
 			setStatus(404, outMedia);
 			e.printStackTrace();
 		}
-
-		/*
-		 * out.println("<HTML>"); //out.println("<HEAD> <TITLE> Hello," + name +
-		 * "</TITLE></HEAD>"); out.println("<BODY>"); //out.println("Hello, " +
-		 * name); out.println("</BODY>"); out.println("</HTML>");
-		 */
 		outMedia.close();
 	}
 
-
-
+	/**
+	 * HTTP POST method, extending the previous web page content 
+	 * Useful data is collected from the request body
+	 * @param in : input stream containing the input data
+	 * @param req : the requested resource
+	 * @param outMedia : the output stream (to send the response to the request)
+	 * @param readByte : input data in bytes
+	 * @throws IOException
+	 */
 	public void doPost(BufferedReader in, String req, PrintStream outMedia, InputStream readByte) throws IOException {
 		try {
-			
-			
-			//tryna get content-type in HEADER !!!
-			
 			String strRead = in.readLine();
 			String content_type = "";
 			int content_length = 0;
 			while (strRead != null && !strRead.equals("")) {
-				// out.print("<h4>test</h4>");
-				
+
 				strRead = in.readLine();
 				System.out.println("head : " + strRead);
 				String[] infos = strRead.split(":");
-				
 				if(infos[0].equals("content-length") || infos[0].equals("Content-length"))
 				{
 					content_length = Integer.parseInt(infos[1].substring(1, infos[1].length()));
 				}
 			}
 			
-			System.out.println("sortir de head");
-	
-			
-			//on a atteint le saut de ligne = end of the header avec la boucle d'avant donc on est bien dans le body
-			//on écrit au fur et à mesure ds le fichier donné par le POST
-			
-//			File file = new File(req);
-//			if (!file.exists()) {
-//				file.createNewFile();
-//			}
-			//System.out.println("before fos");
-			
-			//System.out.println("after fos");
-			//System.out.println(readByte.available());
-
-//			while(readByte.available()>0){
-//				fos.write(readByte.read());
-//				//System.out.println(readByte.available());
-//			}
-			
-			
-			
-//			FileWriter fw = new FileWriter(req + "received.txt", true);
-//
-//			BufferedWriter bw = new BufferedWriter(fw);
-			
-			System.out.println("before readLine");
-			
 			char charRead = (char)in.read();
-			
-			System.out.println("before while");
-			System.out.println("strRead : " + strRead);
 			FileOutputStream fos = new FileOutputStream(req,true);
 			
-			//content_length = 18;
 			while (content_length !=1 /*&& strRead != null && !strRead.equals("null")*/) {
-				//System.out.println("kjdnfdkls");
-				System.out.println(content_length);
-				//content_length -= strRead.length();
 				content_length--;
-				//strRead = strRead +"\n";
 				fos.write((byte)charRead);
-				//strRead = in.readLine();
 				charRead = (char)in.read();
 				System.out.println(charRead);
-				
 			}
-			//System.out.println("kjdnfdkls");
-			System.out.println(content_length);
 			fos.write((byte)charRead);
 			fos.write("\n".getBytes());
 			fos.close();
 			
 			String extension = getExtension(req);
-			//String err = "200 OK";
-
 			Path path = Paths.get( req);
 			byte[] fileContents = Files.readAllBytes(path);
 			
@@ -289,72 +229,19 @@ public class WebServer {
 			outMedia.write(fileContents);
 			outMedia.close();
 			
-//			
-//			boolean infooutoftwo = false;
-//			LinkedList<String> received = new LinkedList<>();
-//			if(content_type.equals("multipart/form-data")) 
-//			{
-//				//name="nameofthevariable"
-//				strRead = req.readLine();
-//				while (strRead != null && !strRead.equals("")) {
-//					// out.print("<h4>test</h4>");
-//					String[] infos = strRead.split("\"");
-//					received.add(infos[1]);
-//					bw.write(infos[1]);
-//					bw.newLine();
-//					strRead = req.readLine();
-//				}
-//				
-//			}
-//			else if(content_type.equals("application/x-www-form-urlencoded"))
-//			{
-//				//variable=value
-//				strRead = req.readLine();
-//				while (strRead != null && !strRead.equals("null")) {
-//					// out.print("<h4>test</h4>");
-//					
-//					String[] infos = strRead.split("&");
-//					for(int a =0; a < infos.length ; a++)
-//					{
-//						received.add(infos[a].split("=")[0]);	
-//						received.add(infos[a].split("=")[1]);
-//					}
-//					
-//					infooutoftwo = true;
-//					strRead = req.readLine();
-//				}				
-//			}
-//			
-//			
-//			while (strRead != null && !strRead.equals("")) {
-//				
-//				outMedia.print("<h1>" + strRead + "</h1>");
-//
-//				bw.write(strRead);
-//				bw.newLine();
-//				strRead = req.readLine();
-//				bw.write(strRead + "\n");
-//				bw.newLine();
-//			}
-//			for(int a = 0; a < received.size() ; a++)
-//			{
-//				System.out.println(received.get(a));
-//			}
-
-			//bw.close();
-			/*
-			 * bw.write(out + "\n"); bw.newLine();
-			 */
-			// br.close();
 		} catch (IOException e) {
 			setStatus(404, outMedia);
 			e.printStackTrace();
-			
 		}
-
 		outMedia.close();
 	}
 
+	/**
+	 * HTTP HEAD method, sending the header of the response
+	 * @param req: the requested resource
+	 * @param outMedia : the output stream (to send the response to the request)
+	 * @throws IOException
+	 */
 	public void doHead(String req, PrintStream outMedia) throws IOException {
 		try {
 			
@@ -363,49 +250,45 @@ public class WebServer {
 			String err = "200 OK";
 			Path path = Paths.get(req);
 			byte[] fileContents = Files.readAllBytes(path);
-
 			String type = "";
 
 			if (extension.equals("txt") || extension.equals("html")) {
-
 				type = "text";
 				Header(err, type, extension, outMedia, fileContents.length);
 
 			} else if (extension.equals("png") || extension.equals("jpeg") || extension.equals("jpg")) {
-
 				type = "image";
 				Header(err, type, extension, outMedia, fileContents.length);
-
 			}
-
 			outMedia.close();
-
-		
 
 		} catch (IOException e) {
 			setStatus(404, outMedia);
 			e.printStackTrace();
-			
 		}
-
 		outMedia.close();
 	}
 
+	/**
+	 * HTTP PUT method, replacing the previous web page content/placing documents directly on the server
+	 * Useful data is collected from the request body
+	 * @param in : input stream containing the input data
+	 * @param req : the requested resource
+	 * @param outMedia : the output stream (to send the response to the request)
+	 * @param readByte : input data in bytes
+	 * @throws IOException
+	 */
 	
-
+	// TO DO !!!!!!
 	public void doPut(String req, PrintStream out, String root) {
 		try {
 			out.println(req);
 			FileReader fr = new FileReader(root + req);
 			BufferedReader br = new BufferedReader(fr);
 			while ((br.readLine()) != null) {
-				// out.print("<h4>test</h4>");
 				out.print("<h1>" + br.read() + "</h1>");
 
 			}
-			/*
-			 * bw.write(out + "\n"); bw.newLine();
-			 */
 			br.close();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -414,18 +297,27 @@ public class WebServer {
 		out.close();
 	}
 
-	public void doDelete(String req, PrintStream out, String root) {
+	/**
+	 * HTTP DELETE method, deleting documents from the server 
+	 * @param req: the requested resource
+	 * @param outMedia : the output stream (to send the response to the request)
+	 */
+	public void doDelete(String req, PrintStream out) {
 		try {
-			Path path = FileSystems.getDefault().getPath(root + req);
+			Path path = FileSystems.getDefault().getPath(req);
 			Files.deleteIfExists(path);
 
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
 		out.close();
 	}
 
+	/**
+	 * Get the extension of the requested document
+	 * @param request : the requested resource
+	 * @return
+	 */
 	String getExtension(String request) {
 
 		if (request != null && request.contains(".")) {
@@ -434,10 +326,14 @@ public class WebServer {
 		} else {
 			return "none";
 		}
-
 	}
 
-	
+	/**
+	 * set the authorization rules depending on the client's access rights and protection rules
+	 * @param status : error code
+	 * @param outMedia : output stream (to send the response to the request)
+	 * @throws IOException
+	 */
 	public void setStatus(int status, PrintStream outMedia) throws IOException {
 		switch (status){
 		case 404: 
@@ -472,6 +368,14 @@ public class WebServer {
 		}
 	}
 	
+	/**
+	 * create response header
+	 * @param err : status code
+	 * @param type : resource content type
+	 * @param extension : resource extension
+	 * @param outMedia : output stream (to send the response to the request)
+	 * @param size : resource content length
+	 */
 	void Header(String err, String type, String extension, PrintStream outMedia, int size) {
 		outMedia.println("HTTP/1.0 " + err);
 		outMedia.println("Content-Type:" + type + "/" + extension);
@@ -484,10 +388,3 @@ public class WebServer {
 	}
 
 }
-
-// contenu binaire = fileinputstream
-
-// headers construction
-// https://stackoverflow.com/questions/20889076/constructing-http-headers-for-java-http-server
-
-// http://www.javapractices.com/topic/TopicAction.do?Id=245
