@@ -101,7 +101,7 @@ public class WebServer {
 						str = "";
 					} else if (str != null && str.substring(0, 3).equals("PUT")) {
 						String request = str.substring(5, str.length() - "HTTP\1.1".length() - 2);
-						//doPut(request, outMedia);
+						doPut(in, request, outMedia,readByte);
 						str = "";
 					} else if (str != null && str.substring(0, 6).equals("DELETE")) {
 						String request = str.substring(8, str.length() - "HTTP\1.1".length() - 2);
@@ -280,21 +280,76 @@ public class WebServer {
 	 */
 	
 	// TO DO !!!!!!
-	public void doPut(String req, PrintStream out, String root) {
+	public void doPut(BufferedReader in, String req, PrintStream outMedia, InputStream readByte) {
 		try {
-			out.println(req);
-			FileReader fr = new FileReader(root + req);
-			BufferedReader br = new BufferedReader(fr);
-			while ((br.readLine()) != null) {
-				out.print("<h1>" + br.read() + "</h1>");
+//			out.println(req);
+//			FileReader fr = new FileReader(root + req);
+//			BufferedReader br = new BufferedReader(fr);
+//			while ((br.readLine()) != null) {
+//				out.print("<h1>" + br.read() + "</h1>");
+//
+//			}
+//			br.close();
+			
+			//*****//
+			File file = new File(req);
+			if (!file.exists()) {
+				file.createNewFile();
+				//on parse body pour écrire dans file
+				
+				String strRead = in.readLine();
+				String content_type = "";
+				int content_length = 0;
+				while (strRead != null && !strRead.equals("")) {
 
+					strRead = in.readLine();
+					System.out.println("head : " + strRead);
+					String[] infos = strRead.split(":");
+					if(infos[0].equals("content-length") || infos[0].equals("Content-length"))
+					{
+						content_length = Integer.parseInt(infos[1].substring(1, infos[1].length()));
+					}
+				}
+				
+				//char charRead = (char)in.read();
+				byte byteRead = (byte) readByte.read();
+				FileOutputStream fos = new FileOutputStream(req,true);
+				
+				while (content_length !=1 /*&& strRead != null && !strRead.equals("null")*/) {
+					content_length--;
+					//fos.write((byte)charRead);
+					//charRead = (char)in.read();
+					//System.out.println(charRead);
+					fos.write(byteRead);
+					byteRead = (byte) readByte.read();
+					
+				}
+				fos.write(byteRead);
+				//.write("\n".getBytes());
+				fos.close();
+				
+				String extension = getExtension(req);
+				Path path = Paths.get( req);
+				byte[] fileContents = Files.readAllBytes(path);
+				
+				Header("200 OK", "text", extension, outMedia, fileContents.length);
+				outMedia.write(fileContents);
+				outMedia.close();
+				
+				
 			}
-			br.close();
+			else
+			{
+				//error
+				//file already exists
+				//setStatus(?,outMedia);
+			}
+			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 
-		out.close();
+		outMedia.close();
 	}
 
 	/**
