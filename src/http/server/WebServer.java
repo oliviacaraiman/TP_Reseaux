@@ -81,30 +81,43 @@ public class WebServer {
 				 * read the HTTP request and decide which of the following methods is called
 				 */
 				String str = ".";
+				byte bytein;
+				char charin;
 				while (str != null && !str.equals("")) {
-					str = in.readLine();
+					//str = in.readLine();
+					str = "";
+					bytein = (byte) readByte.read();
+					charin = (char)bytein;
+					while(charin != '\n')
+					{
+						str += Character.toString(charin);
+						System.out.println(charin);
+						System.out.println(str);
+						bytein = (byte) readByte.read();
+						charin = (char)bytein;
+					}
 
 					System.out.println(str);
 					if (str != null && str.substring(0, 3).equals("GET")) {
-						String request = str.substring(5, str.length() - "HTTP\1.1".length() - 2);
+						String request = str.substring(5, str.length() - "HTTP\1.1".length() - 3);
 						System.out.println(request);
 						if (!request.equals("favicon.ico"))
 							doGet(request, outMedia);
 						str = "";
 					} else if (str != null && str.substring(0, 4).equals("POST")) {
-						String request = str.substring(6, str.length() - "HTTP\1.1".length() - 2);
+						String request = str.substring(6, str.length() - "HTTP\1.1".length() - 3);
 						doPost(in, request, outMedia,readByte);
 						str = "";
 					} else if (str != null && str.substring(0, 4).equals("HEAD")) {
-						String request = str.substring(6, str.length() - "HTTP\1.1".length() - 2);
+						String request = str.substring(6, str.length() - "HTTP\1.1".length() - 3);
 						doHead(request, outMedia/*, root*/);
 						str = "";
 					} else if (str != null && str.substring(0, 3).equals("PUT")) {
-						String request = str.substring(5, str.length() - "HTTP\1.1".length() - 2);
+						String request = str.substring(5, str.length() - "HTTP\1.1".length() - 3);
 						doPut(in, request, outMedia,readByte);
 						str = "";
 					} else if (str != null && str.substring(0, 6).equals("DELETE")) {
-						String request = str.substring(8, str.length() - "HTTP\1.1".length() - 2);
+						String request = str.substring(8, str.length() - "HTTP\1.1".length() - 3);
 						doDelete(request, outMedia);
 						str = "";
 					} else {
@@ -112,7 +125,7 @@ public class WebServer {
 					}
 				}
 				outMedia.flush();
-				remote.close();
+				//remote.close();
 			} catch (Exception e) {
 				System.out.println("Error: " + e);
 				e.printStackTrace();
